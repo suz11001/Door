@@ -11,7 +11,7 @@ import subprocess
 import re
 import glob
 from collections import OrderedDict
-
+import sys
 
 def mapGeneDomain(mapping_file):
     mapping={}
@@ -45,30 +45,17 @@ def  makeblastdb(domain):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(
-    prog='find_domainfamilies.py',
-    usage='''python find_geneseqs.py --genes [path to pretransfer gene files] --out [name of output fasta file]''',
-    description='''This program pulls out specific sequences from a fasta file, given the fasta file and a list of sequences saved in a text file''',
-    epilog='''It requires numpy and biopython libraries''')
-
-    parser.add_argument('--genes', type=str, help='path to pretransfer gene files', required=True)
-    parser.add_argument('--out', type=str, help='name of output fasta file', required=False)
-    
-    args=parser.parse_args()
-    genesDir=args.genes
-    output=args.out
-
-    cwd="/home/FCAM/szaman/researchMukul/pgtr/biological_data/"
-    print('working on gene family ', genesDir) 
-    
-    handle_genes=cwd+"/aligns-pep/"+genesDir+".pep.align"
+    handle_genes=sys.argv[1]
     if os.path.isfile(handle_genes):
         pass
     else:
-        handle_genes=cwd+"/aligns-pep-filtered/"+genesDir+".pep.align"
+        print('this file does not exist, please provide valid file path')
 
+    cwd=sys.argv[2] #should be provided as /path/to/sample_data/01_initial_domains/11755/domain_fams/                                  
+        
+    genesDir=sys.argv[3]
 
-    path = cwd+'sagephy_struct_all_keepOrder/01_initial_domains/'+genesDir+"/*.fa"
+    path = cwd+"/*.fa"
     files = glob.glob(path)
 
     domain_fam_sequences={}
@@ -78,16 +65,15 @@ if __name__ == "__main__":
     
     for gene_rec in id_dict_genes:
         gene_rep={}
-        test_list=["dgri", "dmoj", "dvir", "dwil", "dpse","dper","dana","dyak","dere","dsim","dsec","dmel"]
-        res = [ele for ele in test_list if(ele in gene_rec)]
-        if len(res) == 0:
-            continue #continue to the next gene_rec if it is not a fly id
+
         print('gene record is: ', gene_rec)
         for domain_fam in files: 
             print(domain_fam)
             domain_fam_num = os.path.basename(domain_fam).split(".")[0]
+            #change this
+            domain_fam_seq = "../../03_final_domains/"+genesDir+"/"+os.path.basename(domain_fam)
             id_dict_prots = SeqIO.to_dict(SeqIO.parse(domain_fam, "fasta"))
-            map_file=cwd+'sagephy_struct_all_keepOrder/01_initial_domains/'+genesDir+"/"+domain_fam_num+"_mapping.txt"
+            map_file=cwd+'/'+domain_fam_num+"_mapping.txt"
 
             print(gene_rec)
             mapDG=mapGeneDomain(map_file)
@@ -175,17 +161,17 @@ if __name__ == "__main__":
         out.close()
 
     for df_num in domain_fam_sequences.keys():
-        muscle_path="/isg/shared/apps/muscle/3.8.31/muscle"
+        muscle_path=sys.argv[4]+"/muscle"
         outf="./"+df_num+".temp.aln"
         in_f=df_num+".fa"
-        subprocess.call(muscle_path + " -in " + in_f + " -out " + outf + " -maxiters 12", shell=True)
+        subprocess.call(muscle_path + " -align " + in_f + " -output " + outf, shell=True)
         aln_dict_dom = SeqIO.to_dict(SeqIO.parse(df_num+".temp.aln", "fasta"))
         aln_dict_gene = SeqIO.to_dict(SeqIO.parse("onlygenes.aln", "fasta"))
         aln_len=AlignIO.read(df_num+".temp.aln", "fasta").get_alignment_length()
         gene_dom_pos={}
         for rec in aln_dict_gene:
             if rec in aln_dict_dom.keys():
-                gene_dom_pos[rec]=str(id_dict_genes[rec].seq)
+                gene_dom_pos[rec]=str(aln_dict_dom[rec].seq)
             else:
                 gene_dom_pos[rec]="-"*aln_len
     

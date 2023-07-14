@@ -8,26 +8,25 @@ from Bio import AlignIO
 import re
 
 parser = argparse.ArgumentParser(
-     prog='04_ordered_seqs.py',
-     usage='''python  04_ordered_seqs.py  --genes [path to pretransfer gene files] --out [name of output fasta file]''',
+     prog='04_cat_seqs.py',
+     usage='''python 04_cat_seqs.py  --genes [path to pretransfer gene files] --out [name of output fasta file]''',
      description='''This program pulls out specific sequences from a fasta file, given the fasta file and a list of sequences saved in a text file''',
      epilog='''It requires numpy and biopython libraries''')
 
 parser.add_argument('--genes', type=str, help='path to pretransfer gene files', required=True)
-parser.add_argument('--out', type=str, help='name of output fasta file', required=False)
+
 
 args=parser.parse_args()
 genesDir=args.genes
-output=args.out
+
 
 gene_seqs={}
 domain_seqs={}
 
-cwd="/home/FCAM/szaman/researchMukul/pgtr/biological_data/sagephy_struct_all/"
 
 domain_families=os.listdir('./domain_fam_alns')
 
-gene_seq=cwd+"/04_alignments/"+genesDir+"/onlygenes.aln"
+gene_seq="./onlygenes.aln"
 gene_dict = SeqIO.to_dict(SeqIO.parse(gene_seq, "fasta"))
 
 for record in gene_dict:
@@ -40,7 +39,7 @@ for df in domain_families:
 
 
     # set all the files
-    handle_domain=cwd+"/04_alignments/"+genesDir+"/"+df
+    handle_domain="./domain_fam_alns/"+df
     ###
 
     domain_dict={}
@@ -65,7 +64,7 @@ for df in domain_families:
             
 print(domain_seqs)
 
-order_out="./cat_seqs.aln"
+order_out="./doorA_seqs.aln"
 
 with open (order_out, 'w') as out:
     for a in gene_seqs:

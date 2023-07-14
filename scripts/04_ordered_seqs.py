@@ -14,25 +14,23 @@ parser = argparse.ArgumentParser(
      epilog='''It requires numpy and biopython libraries''')
 
 parser.add_argument('--genes', type=str, help='path to pretransfer gene files', required=True)
-parser.add_argument('--out', type=str, help='name of output fasta file', required=False)
 
 args=parser.parse_args()
 genesDir=args.genes
-output=args.out
 
 gene_seqs={}
 domain_seqs={}
 
-cwd="/home/FCAM/szaman/researchMukul/pgtr/biological_data/sagephy_struct_all/"
-
 domain_families=os.listdir('./domain_fam_alns')
 
-gene_seq=cwd+"/04_alignments/"+genesDir+"/onlygenes.aln"
+#gene_seq="./onlygenes.aln"
+gene_seq="../../03_final_domains/"+genesDir+"/onlygenes.fa"
 gene_dict = SeqIO.to_dict(SeqIO.parse(gene_seq, "fasta"))
 
-for record in gene_dict:
-    rec=gene_dict[record].id
-    gene_seqs[rec]=str(gene_dict[record].seq).replace("-","")
+for rec in gene_dict:
+    gene_seqs[rec]=gene_dict[rec].seq
+
+print('gene seqs: ', gene_seqs)
 
 for df in domain_families: 
     df_num=df.split("_")[2]
@@ -40,38 +38,35 @@ for df in domain_families:
 
 
     # set all the files
-    handle_domain=cwd+"/04_alignments/"+genesDir+"/"+df
+    handle_domain="./"+df_num+".fa"
     ###
 
-    domain_dict={}
-    for a in AlignIO.parse(handle_domain, "fasta"):
-        for record in a:
-            domain_seq=str(record.seq).replace("-","")
-            domain_dict[record.id]=domain_seq
-
+    domain_dict= SeqIO.to_dict(SeqIO.parse(handle_domain, "fasta"))
+    
 
     for record in gene_dict:
         rec=gene_dict[record].id
         domain_rec=""
         try:
-            domain_rec=domain_dict.get(record)
+            domain_rec=domain_dict[record].seq
+            if rec in domain_seqs.keys():
+                 hold_val=domain_seqs.get(rec)+domain_rec
+                 domain_seqs[rec]=hold_val
+            else:
+                 domain_seqs[rec]=domain_rec
         except:
             print('no domain record for this gene ', record)
 
-        if rec not in domain_seqs.keys():
-            domain_seqs[rec]=domain_rec
-        else:
-            domain_seqs[rec]=domain_seqs.get(rec)+domain_rec
             
-print(domain_seqs)
+print('domain_seqs: ', domain_seqs)
 
-order_out="./ordered_seqs.fa"
+order_out="./doorS_seqs.fa"
 
 with open (order_out, 'w') as out:
     for a in gene_seqs:
         #print(a)
         #print(gene_seqs.get(a))
-        seqs=gene_seqs.get(a)+domain_seqs.get(a)
+        seqs=str(gene_seqs.get(a))+str(domain_seqs.get(a))
         out.write(">"+a+"\n")
         out.write(seqs+"\n")
 out.close()

@@ -11,7 +11,7 @@ import subprocess
 import re
 import glob
 from collections import OrderedDict
-
+import sys
 
 def mapGeneDomain(mapping_file):
     mapping={}
@@ -45,30 +45,32 @@ def  makeblastdb(domain):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(
-    prog='find_domainfamilies.py',
-    usage='''python find_geneseqs.py --genes [path to pretransfer gene files] --out [name of output fasta file]''',
-    description='''This program pulls out specific sequences from a fasta file, given the fasta file and a list of sequences saved in a text file''',
-    epilog='''It requires numpy and biopython libraries''')
+    # parser = argparse.ArgumentParser(
+    # prog='03_find_geneseqs.py',
+    # usage='''python find_geneseqs.py --genes [path to pretransfer gene files] --out [name of output fasta file]''',
+    # description='''This program pulls out specific sequences from a fasta file, given the fasta file and a list of sequences saved in a text file''',
+    # epilog='''It requires numpy and biopython libraries''')
 
-    parser.add_argument('--genes', type=str, help='path to pretransfer gene files', required=True)
-    parser.add_argument('--out', type=str, help='name of output fasta file', required=False)
+    # parser.add_argument('--genes', type=str, help='path to pretransfer gene files', required=False)
+    # parser.add_argument('--out', type=str, help='name of output fasta file', required=False)
     
-    args=parser.parse_args()
-    genesDir=args.genes
-    output=args.out
+    # args=parser.parse_args()
+    # genesDir=args.genes
+    # output=args.out
 
-    cwd="/home/FCAM/szaman/researchMukul/pgtr/biological_data/"
-    print('working on gene family ', genesDir) 
+    # print('working on gene family ', genesDir) 
     
-    handle_genes=cwd+"/aligns-pep/"+genesDir+".pep.align"
+    #path to genes fasta file
+    handle_genes=sys.argv[1]
     if os.path.isfile(handle_genes):
         pass
     else:
-        handle_genes=cwd+"/aligns-pep-filtered/"+genesDir+".pep.align"
+        print('this file does not exist, please provide valid file path')
 
 
-    path = cwd+'sagephy_struct_all/01_initial_domains/'+genesDir+"/*.fa"
+    #set cwd to directory of the domain family fasta and mapping files
+    cwd=sys.argv[2] #should be provided as /path/to/sample_data/01_initial_domains/11755/
+    path = cwd+"/*.fa"
     files = glob.glob(path)
 
     domain_fam_sequences={}
@@ -78,16 +80,12 @@ if __name__ == "__main__":
     
     for gene_rec in id_dict_genes:
         gene_rep={}
-        test_list=["dgri", "dmoj", "dvir", "dwil", "dpse","dper","dana","dyak","dere","dsim","dsec","dmel"]
-        res = [ele for ele in test_list if(ele in gene_rec)]
-        if len(res) == 0:
-            continue #continue to the next gene_rec if it is not a fly id
         print('gene record is: ', gene_rec)
         for domain_fam in files: 
             print(domain_fam)
             domain_fam_num = os.path.basename(domain_fam).split(".")[0]
             id_dict_prots = SeqIO.to_dict(SeqIO.parse(domain_fam, "fasta"))
-            map_file=cwd+'sagephy_struct_all/01_initial_domains/'+genesDir+"/"+domain_fam_num+"_mapping.txt"
+            map_file=cwd+"/"+domain_fam_num+"_mapping.txt"
 
             print(gene_rec)
             mapDG=mapGeneDomain(map_file)

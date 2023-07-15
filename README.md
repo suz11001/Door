@@ -1,6 +1,12 @@
 # Door (Domain Organizer)
 
-Door (short for Domain Organizer) is an implementation of a simple proof-of-concept approach for removing conflicting domain architecture within a gene family. Door takes as input a gene family, all domain families present in the given gene family, and a mapping that exist between domain sequences and gene sequences. Sample data is provided as a template. Door operates in multiple steps (outlined below), briefly, it refines the domain families, extracts the genic region, corrects for domain ordering, and creates a global multiple sequence alignment using MUSCLE. There are two outputs Door generates, Door-S which corrects the domain ordering and pushes the entire sequence (gene + domain) into MUSCLE and Door-A which aligns each domain family and the genic region indepedent via MUSCLE and produces a global MSA by accounting for domain loss and introducing gaps as needed. 
+Door (short for Domain Organizer) implements two simple proof-of-concept approachs for improving gene family sequence alignments by correcting for out-of-order protein domains. Door takes as input a gene family, all domain families present in the given gene family, and a mapping of the domain sequences to their corresponding gene sequences. It outputs a global multiple sequence alignment for the input gene family using the two algorithms, Door-S and Door-A, described in the paper cited below. Both algorithms reorder the domains and non-domain regions of the gene sequences to allow for better alignment of homologous sequence regions. Door-S reorders the domain and non-domain regions in the input gene sequences and uses MUSCLE to compute the final global alignment, while Door-A organises and aligns the sequences belonging to each domain family independently (using MUSCLE)and then produces a global alignment by concatenating the different domain family and non-domain region alignments.  
+
+Door can be cited as follows:
+
+Reducing the impact of domain rearrangement on sequence alignment and phylogeny reconstruction<br>
+Sumaira Zaman, Mukul S. Bansal<br>
+Under review
 
 
 ## Dependencies
@@ -15,7 +21,7 @@ Door (short for Domain Organizer) is an implementation of a simple proof-of-conc
 
 The main script (bash.sh) will run from start to finish as long as the input data is provided as in the sample_data directory. 
 
-1. 03_find_geneseqs.py - Extract only the genic region of the sequences and refind the domain family sequences.
+1. 03_find_geneseqs.py - Extract only the genic region of the sequences and refine the domain family sequences.
 
    command: `python 03_find_geneseqs.py  path/to/01_initial_domains/gene_family/gene_family.fa path/to/01_initial_domains/gene_family/domain_fams`
 
